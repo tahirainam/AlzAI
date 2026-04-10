@@ -1,0 +1,259 @@
+/* ============================================================
+      WHY: Custom CSS only where Tailwind can't help —
+      gradients, backgrounds, and special component styles
+    ============================================================ */
+
+body {
+  font-family: "DM Sans", sans-serif;
+  /* WHY: Dark radial gradient gives a clinical "scan room" feel
+         — atmospheric without being distracting */
+  background: radial-gradient(
+    ellipse at top,
+    #1a3260 0%,
+    #0f1f3d 50%,
+    #080f1e 100%
+  );
+  min-height: 100vh;
+}
+
+/* WHY: The brain SVG in the hero is purely decorative atmosphere */
+.brain-bg {
+  position: absolute;
+  opacity: 0.04;
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* WHY: Glass morphism card — frosted glass over dark background
+       creates depth and a modern medical-dashboard aesthetic */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* WHY: Section cards for each form group — lighter glass panels
+       visually group related fields (like a medical form sections) */
+.form-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+/* WHY: Custom input styling — dark inputs with teal focus ring
+       matches our palette and feels like medical software */
+.form-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #e2e8f0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.form-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  background: rgba(255, 255, 255, 0.09);
+}
+.form-input option {
+  background: #1a3260;
+  color: #e2e8f0;
+}
+
+/* WHY: Labels styled for dark background — muted but readable */
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* WHY: Range sliders need custom CSS — Tailwind doesn't style these */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0d9488;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.6);
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* WHY: Toggle switches for Yes/No fields — much better UX
+       than a dropdown for binary choices in a medical form */
+.toggle-group {
+  display: flex;
+  gap: 8px;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.toggle-btn.active-yes {
+  background: rgba(13, 148, 136, 0.2);
+  border-color: #0d9488;
+  color: #5eead4;
+}
+.toggle-btn.active-no {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #e2e8f0;
+}
+
+/* WHY: Section heading with teal left border — clear visual
+       hierarchy that guides the doctor filling the form */
+.section-title {
+  font-family: "DM Serif Display", serif;
+  font-size: 18px;
+  color: #e2e8f0;
+  margin-bottom: 20px;
+  padding-left: 12px;
+  border-left: 3px solid #0d9488;
+}
+
+/* WHY: The predict button is the primary CTA —
+       teal gradient, glow on hover, scale on click */
+.predict-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 24px rgba(13, 148, 136, 0.35);
+}
+.predict-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(13, 148, 136, 0.5);
+}
+.predict-btn:active {
+  transform: translateY(0);
+}
+.predict-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* WHY: Result panel appears after prediction —
+       color-coded (red=sick, green=healthy) for instant clarity */
+.result-panel {
+  display: none;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 24px;
+  animation: fadeUp 0.5s ease forwards;
+  text-align: center;
+}
+.result-panel.show {
+  display: block;
+}
+.result-positive {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.result-negative {
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.3);
+}
+
+/* WHY: Staggered animation delays for section cards —
+       they fade up one by one on page load, feels polished */
+.section-animate {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+.section-animate:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.section-animate:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.section-animate:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.section-animate:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.section-animate:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.section-animate:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.section-animate:nth-child(7) {
+  animation-delay: 0.7s;
+}
+
+/* WHY: Loading spinner shown while waiting for API response */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* WHY: Confidence bar — visual representation of model certainty */
+.confidence-bar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}

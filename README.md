@@ -33,7 +33,23 @@
 
 ## Overview
 AlzAI is a machine learning project that predicts the likelihood of Alzheimer's Disease based on clinical & lifestyle data.  
-Built with **Python, Scikit-Learn, Pandas, Flask**.
+Built with **Python, Scikit-Learn, Pandas, ....**.
 
 ---
 
+'
+
+Model:     Gradient Boosting Classifier
+Dataset:   2149 patients, 32 features
+Split:     80% train / 20% test
+
+Accuracy:   95.81%
+Precision:  95.92%
+Recall:     92.16%
+Missed:     12 out of 153 sick patients
+
+Validated:  5-fold Stratified CV
+            Accuracy: 94.88% ± 0.69%
+            Recall:   91.84% ± 1.98%
+
+'

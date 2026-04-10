@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AlzAI — Alzheimer's Risk Assessment</title>
+
+  <!--CSS-->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- ============================================================
+    WHY: Tailwind CSS via CDN — no install needed, utility classes
+    give us responsive design without writing custom CSS for layout
+  ============================================================ -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ============================================================
+    WHY: Google Fonts — "DM Serif Display" for headings (elegant,
+    medical-authoritative feel), "DM Sans" for body (clean, readable)
+    These fonts give the app a premium clinical feel vs generic Arial
+  ============================================================ -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <script>
+    // WHY: Tailwind config lets us define our own design tokens
+    // (colors, fonts) so every class is consistent across the page
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif:  ["DM Serif Display", "serif"],
+            sans:   ["DM Sans", "sans-serif"],
+          },
+          colors: {
+            // Our brand palette — deep navy + clinical teal accent
+            navy:  { DEFAULT: "#0f1f3d", light: "#1a3260", muted: "#2a4a7f" },
+            teal:  { DEFAULT: "#0d9488", light: "#14b8a6", glow: "#5eead4" },
+            slate: { form: "#f0f4f8", border: "#cbd5e1" },
+          },
+          animation: {
+            "fade-up":   "fadeUp 0.6s ease forwards",
+            "fade-in":   "fadeIn 0.4s ease forwards",
+            "pulse-slow":"pulse 3s ease-in-out infinite",
+          },
+          keyframes: {
+            fadeUp: {
+              "0%":   { opacity: 0, transform: "translateY(20px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" },
+            },
+            fadeIn: {
+              "0%":   { opacity: 0 },
+              "100%": { opacity: 1 },
+            },
+          },
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen py-12 px-4">
+
+  <!-- ============================================================
+    WHY: Decorative brain SVG in background — subtle, atmospheric,
+    immediately communicates "this is a neurology/brain health tool"
+  ============================================================ -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <svg class="brain-bg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 20 C60 20 30 50 30 85 C30 105 40 120 55 130 C50 140 50 155 60 165 C70 175 85 175 95 170 C97 175 100 178 100 178 C100 178 103 175 105 170 C115 175 130 175 140 165 C150 155 150 140 145 130 C160 120 170 105 170 85 C170 50 140 20 100 20Z" stroke="white" stroke-width="2" fill="none"/>
+      <path d="M70 60 C70 60 75 80 85 85 C80 90 75 100 80 110" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M130 60 C130 60 125 80 115 85 C120 90 125 100 120 110" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M85 85 C90 88 95 88 100 87 C105 88 110 88 115 85" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M60 95 C65 92 70 93 75 96" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M140 95 C135 92 130 93 125 96" stroke="white" stroke-width="1.5" fill="none"/>
+    </svg>
+  </div>
+
+  <div class="max-w-3xl mx-auto relative">
+
+    <!-- ============================================================
+      HEADER SECTION
+      WHY: Large serif headline + subtitle establishes this as a
+      serious medical tool. The teal dot beside "AlzDetect" acts
+      as a logo mark — simple but distinctive.
+    ============================================================ -->
+    <div class="text-center mb-12 animate-fade-up">
+      <div class="inline-flex items-center gap-2 mb-6">
+        <!-- Pulsing teal dot — suggests "live" / "active" system -->
+        <div class="w-3 h-3 rounded-full bg-teal animate-pulse-slow"></div>
+        <span class="text-teal-light text-sm font-medium tracking-widest uppercase">
+          AlzAI
+        </span>
+      </div>
+      <h1 class="font-serif text-5xl text-white mb-4 leading-tight">
+        Alzheimer's Risk<br/>
+        <span class="italic text-teal-glow">Assessment</span>
+      </h1>
+      <p class="text-slate-400 text-base max-w-md mx-auto leading-relaxed">
+        Enter patient clinical data below. Our Gradient Boosting model
+        will assess Alzheimer's risk with <strong class="text-slate-300">95.81% accuracy</strong>.
+      </p>
+    </div>
+
+    <!-- ============================================================
+      MAIN FORM CARD
+      WHY: Glass morphism container wraps all sections — gives depth
+      and unifies the form as one cohesive object
+    ============================================================ -->
+    <div class="glass-card rounded-2xl p-8">
+
+      <!-- === SECTION 1: PATIENT DEMOGRAPHICS =================== -->
+      <!-- WHY: Demographics first — standard medical form ordering.
+           Age uses a number input (precise), Gender/Ethnicity/Education
+           use dropdowns (categorical choices) -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Patient Demographics</h2>
+        <div class="grid grid-cols-2 gap-4">
+
+          <!-- Age: number input, range 60-90 matching dataset -->
+          <div>
+            <label class="form-label">Age</label>
+            <input type="number" id="Age" class="form-input"
+                   min="60" max="90" value="72" placeholder="60–90"/>
+          </div>
+
+          <!-- Gender: dropdown, 0=Male 1=Female matching dataset encoding -->
+          <div>
+            <label class="form-label">Gender</label>
+            <select id="Gender" class="form-input">
+              <option value="0">Male</option>
+              <option value="1">Female</option>
+            </select>
+          </div>
+
+          <!-- Ethnicity: 4 categories as in dataset (0–3) -->
+          <div>
+            <label class="form-label">Ethnicity</label>
+            <select id="Ethnicity" class="form-input">
+              <option value="0">Caucasian</option>
+              <option value="1">African American</option>
+              <option value="2">Asian</option>
+              <option value="3">Other</option>
+            </select>
+          </div>
+
+          <!-- Education Level: 4 levels (0–3) -->
+          <div>
+            <label class="form-label">Education Level</label>
+            <select id="EducationLevel" class="form-input">
+              <option value="0">None</option>
+              <option value="1">High School</option>
+              <option value="2">Bachelor's</option>
+              <option value="3">Higher</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === SECTION 2: PHYSICAL HEALTH ======================== -->
+      <!-- WHY: Sliders for continuous values (BMI, BP, Cholesterol)
+           — more intuitive than typing decimals for clinical staff.
+           Real-time value display next to each slider -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Physical Health</h2>
+        <div class="grid grid-cols-2 gap-6">
+
+          <!-- BMI: 15–40 range, slider with live value display -->
+          <div>
+            <label class="form-label">
+              BMI —
+              <span class="text-teal-light font-semibold" id="BMI-val">27</span>
+            </label>
+            <input type="range" id="BMI" min="15" max="40" step="0.5" value="27"
+                   oninput="document.getElementById('BMI-val').textContent=this.value"/>
+          </div>
+
+          <!-- Systolic BP: 90–179 -->
+          <div>
+            <label class="form-label">
+              Systolic BP —
+              <span class="text-teal-light font-semibold" id="SystolicBP-val">130</span>
+              mmHg
+            </label>
+            <input type="range" id="SystolicBP" min="90" max="179" step="1" value="130"
+                   oninput="document.getElementById('SystolicBP-val').textContent=this.value"/>
+          </div>
+
+          <!-- Diastolic BP: 60–119 -->
+          <div>
+            <label class="form-label">
+              Diastolic BP —
+              <span class="text-teal-light font-semibold" id="DiastolicBP-val">85</span>
+              mmHg
+            </label>
+            <input type="range" id="DiastolicBP" min="60" max="119" step="1" value="85"
+                   oninput="document.getElementById('DiastolicBP-val').textContent=this.value"/>
+          </div>
+
+          <!-- Cholesterol Total: 150–300 -->
+          <div>
+            <label class="form-label">
+              Total Cholesterol —
+              <span class="text-teal-light font-semibold" id="CholesterolTotal-val">220</span>
+              mg/dL
+            </label>
+            <input type="range" id="CholesterolTotal" min="150" max="300" step="1" value="220"
+                   oninput="document.getElementById('CholesterolTotal-val').textContent=this.value"/>
+          </div>
+
+          <!-- Cholesterol LDL: 50–200 -->
+          <div>
+            <label class="form-label">
+              LDL Cholesterol —
+              <span class="text-teal-light font-semibold" id="CholesterolLDL-val">130</span>
+              mg/dL
+            </label>
+            <input type="range" id="CholesterolLDL" min="50" max="200" step="1" value="130"
+                   oninput="document.getElementById('CholesterolLDL-val').textContent=this.value"/>
+          </div>
+
+          <!-- Cholesterol HDL: 20–100 -->
+          <div>
+            <label class="form-label">
+              HDL Cholesterol —
+              <span class="text-teal-light font-semibold" id="CholesterolHDL-val">55</span>
+              mg/dL
+            </label>
+            <input type="range" id="CholesterolHDL" min="20" max="100" step="1" value="55"
+                   oninput="document.getElementById('CholesterolHDL-val').textContent=this.value"/>
+          </div>
+
+          <!-- Cholesterol Triglycerides: 50–400 -->
+          <div>
+            <label class="form-label">
+              Triglycerides —
+              <span class="text-teal-light font-semibold" id="CholesterolTriglycerides-val">180</span>
+              mg/dL
+            </label>
+            <input type="range" id="CholesterolTriglycerides" min="50" max="400" step="1" value="180"
+                   oninput="document.getElementById('CholesterolTriglycerides-val').textContent=this.value"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === SECTION 3: LIFESTYLE ============================== -->
+      <!-- WHY: Lifestyle factors — mix of sliders (continuous scores)
+           and toggles (binary yes/no). Toggles are faster to use
+           than dropdowns for simple yes/no questions -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Lifestyle Factors</h2>
+        <div class="grid grid-cols-2 gap-6">
+
+          <!-- Smoking: binary toggle -->
+          <div>
+            <label class="form-label">Smoking</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Smoking', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Smoking', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Smoking" value="0"/>
+          </div>
+
+          <!-- Alcohol: 0–20 scale slider -->
+          <div>
+            <label class="form-label">
+              Alcohol Consumption —
+              <span class="text-teal-light font-semibold" id="AlcoholConsumption-val">5</span>
+              /20
+            </label>
+            <input type="range" id="AlcoholConsumption" min="0" max="20" step="0.5" value="5"
+                   oninput="document.getElementById('AlcoholConsumption-val').textContent=this.value"/>
+          </div>
+
+          <!-- Physical Activity: 0–10 scale -->
+          <div>
+            <label class="form-label">
+              Physical Activity —
+              <span class="text-teal-light font-semibold" id="PhysicalActivity-val">5</span>
+              /10
+            </label>
+            <input type="range" id="PhysicalActivity" min="0" max="10" step="0.5" value="5"
+                   oninput="document.getElementById('PhysicalActivity-val').textContent=this.value"/>
+          </div>
+
+          <!-- Diet Quality: 0–10 scale -->
+          <div>
+            <label class="form-label">
+              Diet Quality —
+              <span class="text-teal-light font-semibold" id="DietQuality-val">5</span>
+              /10
+            </label>
+            <input type="range" id="DietQuality" min="0" max="10" step="0.5" value="5"
+                   oninput="document.getElementById('DietQuality-val').textContent=this.value"/>
+          </div>
+
+          <!-- Sleep Quality: 4–10 scale -->
+          <div>
+            <label class="form-label">
+              Sleep Quality —
+              <span class="text-teal-light font-semibold" id="SleepQuality-val">7</span>
+              /10
+            </label>
+            <input type="range" id="SleepQuality" min="4" max="10" step="0.5" value="7"
+                   oninput="document.getElementById('SleepQuality-val').textContent=this.value"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === SECTION 4: MEDICAL HISTORY ======================== -->
+      <!-- WHY: All binary yes/no — toggles are the perfect UI here.
+           Family history and existing conditions are strong
+           risk factors our model learned from -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Medical History</h2>
+        <div class="grid grid-cols-2 gap-4">
+
+          <!-- Each toggle stores 0/1 in a hidden input -->
+          <!-- the setToggle() JS function handles the logic -->
+
+          <div>
+            <label class="form-label">Family History of Alzheimer's</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('FamilyHistoryAlzheimers', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('FamilyHistoryAlzheimers', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="FamilyHistoryAlzheimers" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Cardiovascular Disease</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('CardiovascularDisease', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('CardiovascularDisease', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="CardiovascularDisease" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Diabetes</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Diabetes', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Diabetes', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Diabetes" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Depression</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Depression', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Depression', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Depression" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Head Injury (History)</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('HeadInjury', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('HeadInjury', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="HeadInjury" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Hypertension</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Hypertension', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Hypertension', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Hypertension" value="0"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === SECTION 5: COGNITIVE ASSESSMENTS ================== -->
+      <!-- WHY: These are the TOP 3 most important features our model
+           found. MMSE, FunctionalAssessment, ADL are the strongest
+           predictors — so they get their own dedicated section
+           with clear clinical descriptions to help the user -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Cognitive Assessments</h2>
+
+        <!-- WHY: Yellow info banner explains the scoring to the user —
+             a clinician filling this form needs to know what 0 vs 30
+             means on the MMSE scale -->
+        <div class="bg-yellow-500 bg-opacity-10 border border-yellow-500
+                    border-opacity-20 rounded-xl p-4 mb-6">
+          <p class="text-yellow-300 text-xs leading-relaxed">
+            ⭐ These three assessments are the <strong>strongest predictors</strong>
+            in our model, accounting for 95% of prediction weight.
+            Fill them carefully.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
+
+          <!-- MMSE: 0–30. Lower = more cognitive decline -->
+          <div>
+            <label class="form-label">
+              MMSE Score (Mini-Mental State Exam) —
+              <span class="text-teal-light font-semibold text-base" id="MMSE-val">24</span>
+              / 30
+            </label>
+            <p class="text-xs text-slate-500 mb-2">
+              0–17 = severe impairment &nbsp;|&nbsp;
+              18–23 = mild impairment &nbsp;|&nbsp;
+              24–30 = normal
+            </p>
+            <input type="range" id="MMSE" min="0" max="30" step="0.5" value="24"
+                   oninput="document.getElementById('MMSE-val').textContent=this.value"/>
+          </div>
+
+          <!-- Functional Assessment: 0–10. Lower = more difficulty -->
+          <div>
+            <label class="form-label">
+              Functional Assessment Score —
+              <span class="text-teal-light font-semibold text-base"
+                    id="FunctionalAssessment-val">7</span>
+              / 10
+            </label>
+            <p class="text-xs text-slate-500 mb-2">
+              0–4 = significant difficulty with daily functions &nbsp;|&nbsp;
+              5–10 = normal function
+            </p>
+            <input type="range" id="FunctionalAssessment" min="0" max="10"
+                   step="0.5" value="7"
+                   oninput="document.getElementById('FunctionalAssessment-val').textContent=this.value"/>
+          </div>
+
+          <!-- ADL: Activities of Daily Living. 0–10 -->
+          <div>
+            <label class="form-label">
+              ADL Score (Activities of Daily Living) —
+              <span class="text-teal-light font-semibold text-base"
+                    id="ADL-val">7</span>
+              / 10
+            </label>
+            <p class="text-xs text-slate-500 mb-2">
+              0–4 = needs significant assistance &nbsp;|&nbsp;
+              5–10 = independent
+            </p>
+            <input type="range" id="ADL" min="0" max="10" step="0.5" value="7"
+                   oninput="document.getElementById('ADL-val').textContent=this.value"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === SECTION 6: SYMPTOMS ================================ -->
+      <!-- WHY: All binary symptom flags — toggles again.
+           These are observable symptoms the clinician checks off.
+           Grid layout keeps it compact and scannable -->
+      <div class="form-section section-animate">
+        <h2 class="section-title">Observed Symptoms</h2>
+        <div class="grid grid-cols-2 gap-4">
+
+          <div>
+            <label class="form-label">Memory Complaints</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('MemoryComplaints', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('MemoryComplaints', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="MemoryComplaints" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Behavioral Problems</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('BehavioralProblems', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('BehavioralProblems', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="BehavioralProblems" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Confusion</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Confusion', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Confusion', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Confusion" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Disorientation</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Disorientation', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Disorientation', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Disorientation" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Personality Changes</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('PersonalityChanges', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('PersonalityChanges', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="PersonalityChanges" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Difficulty Completing Tasks</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('DifficultyCompletingTasks', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('DifficultyCompletingTasks', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="DifficultyCompletingTasks" value="0"/>
+          </div>
+
+          <div>
+            <label class="form-label">Forgetfulness</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-no" onclick="setToggle('Forgetfulness', 0, this)">No</button>
+              <button class="toggle-btn" onclick="setToggle('Forgetfulness', 1, this)">Yes</button>
+            </div>
+            <input type="hidden" id="Forgetfulness" value="0"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- === PREDICT BUTTON ==================================== -->
+      <!-- WHY: Separated from the form sections with spacing —
+           clear visual CTA. Disabled during loading to prevent
+           double submissions -->
+      <div class="section-animate mt-6">
+        <button class="predict-btn" id="predictBtn" onclick="predict()">
+          <span id="btnText">Run Alzheimer's Risk Assessment</span>
+          <span id="btnSpinner" style="display:none">
+            <span class="spinner"></span>
+            &nbsp; Analyzing...
+          </span>
+        </button>
+      </div>
+
+      <!-- === RESULT PANEL ====================================== -->
+      <!-- WHY: Hidden initially, shown after prediction.
+           Color-coded (red/teal) for instant visual communication.
+           Shows diagnosis + confidence % + a bar + disclaimer -->
+      <div id="resultPanel" class="result-panel">
+
+        <!-- Icon changes based on result -->
+        <div id="resultIcon" class="text-6xl mb-4"></div>
+
+        <!-- Main diagnosis text -->
+        <h3 id="resultTitle" class="font-serif text-3xl mb-2"></h3>
+        <p id="resultSubtitle" class="text-sm mb-6 opacity-70"></p>
+
+        <!-- Confidence display -->
+        <div class="max-w-sm mx-auto">
+          <div class="flex justify-between text-xs text-slate-400 mb-1">
+            <span>Model Confidence</span>
+            <span id="confidenceText" class="text-teal-light font-semibold"></span>
+          </div>
+          <div class="confidence-bar-track">
+            <div id="confidenceBar" class="confidence-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Both probabilities -->
+        <div class="flex justify-center gap-8 mt-6 text-sm">
+          <div class="text-center">
+            <div id="probHealthy" class="text-2xl font-semibold text-teal-light"></div>
+            <div class="text-slate-400 text-xs mt-1">No Alzheimer's</div>
+          </div>
+          <div class="text-center">
+            <div id="probSick" class="text-2xl font-semibold text-red-400"></div>
+            <div class="text-slate-400 text-xs mt-1">Alzheimer's</div>
+          </div>
+        </div>
+
+        <!-- WHY: Medical disclaimer is essential — this is a decision
+             support tool, not a replacement for clinical judgment -->
+        <p class="text-xs text-slate-500 mt-6 max-w-sm mx-auto leading-relaxed">
+          ⚕️ This assessment is a clinical decision support tool only.
+          Always confirm with a qualified neurologist before diagnosis.
+        </p>
+
+      </div>
+
+    </div><!-- end glass-card -->
+
+    <!-- Footer -->
+    <p class="text-center text-slate-600 text-xs mt-8">
+      AlzAI · Gradient Boosting Model · 95.81% Accuracy · 92.16% Recall
+    </p>
+
+  </div><!-- end max-w-3xl -->
+  <script src="script.js"></script>
+</body>
+</html>
