@@ -94,7 +94,7 @@
         // WHY: fetch() sends an HTTP POST request to our FastAPI backend
         // running at localhost:8000. This is how frontend talks to backend.
         // We'll set up this URL when we build the backend.
-        const response = await fetch("http://localhost:8000/predict", {
+        const response = await fetch("https://alzai.up.railway.app/predict", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patientData)
